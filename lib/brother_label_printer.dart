@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -11,9 +10,10 @@ class BrotherLabelPrinter {
     return version;
   }
 
-  static Future<String> printTemplate(int templateId, Map<String, String> replacers) async {
-    final String result = await _channel
-        .invokeMethod('printTemplate', {'templateId': templateId, 'replacers': replacers});
+  static Future<String> printTemplate(
+      int templateId, Map<String, String> replacers, int numberOfCopies) async {
+    final String result = await _channel.invokeMethod('printTemplate',
+        {'templateId': templateId, 'replacers': replacers, 'numberOfCopies': numberOfCopies});
     return result;
   }
 }

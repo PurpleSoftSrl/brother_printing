@@ -90,6 +90,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
         result.error("BRPRNOTSET", "Printer not set", "Search the printer first")
       } else {
         val templateId = call.argument<Int>("templateId") ?: 1
+        val noc = call.argument<Int>("numberOfCopies") ?: 1
         val labelReplacers = call.argument<Map<String, String>>("replacers")
         Log.d("BrotherPrinting", "- TemplateId: $templateId - Replacers Counter: ${labelReplacers?.count()}")
         /*    while (brotherPrinterPrintingInProgress) {
@@ -104,6 +105,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
           settings.printerModel = PrinterInfo.Model.QL_820NWB
           settings.ipAddress = brotherPrinter!!.ipAddress
           settings.printMode = PrinterInfo.PrintMode.FIT_TO_PAGE
+          settings.numberOfCopies =  noc
           //settings.macAddress = brotherPrinter.macAddress
           settings.port = PrinterInfo.Port.NET
           brotherPrinterBase!!.printerInfo = settings
