@@ -86,7 +86,8 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                 }
                 result.success("${brotherPrinter!!.ipAddress} - ${brotherPrinter!!.macAddress}")
             }
-        } else if (call.method == "printTemplate") {
+        }
+        else if (call.method == "printTemplate") {
 
             if (brotherPrinter == null) {
                 result.error("BRPRNOTSET", "Printer not set", "Search the printer first")
@@ -135,7 +136,8 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     }
                 }
             }
-        } else if (call.method == "transferTemplate") {
+        }
+        else if (call.method == "transferTemplate") {
             if (brotherPrinter == null) {
                 result.error("BRPRNOTSET", "Printer not set", "Search the printer first")
             } else {
@@ -160,12 +162,14 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                             }
                             brotherPrinterBase!!.endCommunication()
                             brotherPrinterPrintingInProgress = false
-                            result.success(templatePrintResult.errorCode.toString())
+                            Log.d("TAG", "STATUS - " + templatePrintResult.errorCode)
+                            //result.success(templatePrintResult.errorCode.toString())
                         }
                     }
                 }
             }
-        } else {
+        }
+        else {
             result.notImplemented()
         }
     }
