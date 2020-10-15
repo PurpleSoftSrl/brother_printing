@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -29,7 +27,7 @@ class _MyAppState extends State<MyApp> {
     String platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      platformVersion = await BrotherLabelPrinter.search("");
+      platformVersion = await BrotherLabelPrinter.search("", true);
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -45,14 +43,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> testPrint() async {
-    await BrotherLabelPrinter.printTemplate(2, {
-      'SKU': '1098765432',
-      'item_brand': 'BV',
-      'item_size': 'XL',
-      'item_descr': 'borsa bottega veneta',
-      'item_mpc': '6548-655-987',
-      'new_price': '60,00'
-    });
+    await BrotherLabelPrinter.printTemplate(
+        2,
+        {
+          'SKU': '1098765432',
+          'item_brand': 'BV',
+          'item_size': 'XL',
+          'item_descr': 'borsa bottega veneta',
+          'item_mpc': '6548-655-987',
+          'new_price': '60,00'
+        },
+        3);
   }
 
   @override

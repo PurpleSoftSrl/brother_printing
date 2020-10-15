@@ -29,7 +29,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
     channel.setMethodCallHandler(this)
   }
 
-  lateinit var brotherPrinterDiscovery: NetworkDiscovery
+  var brotherPrinterDiscovery: NetworkDiscovery? = null
   var brotherPrinter: NetPrinter? = null
   var brotherPrinterBase: Printer? = null
   var brotherPrinterDiscoveryInProgress = false
@@ -42,9 +42,17 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
         result.error("DSCAGNT001", "Discover Agent already running...", "Try later")
       } else {
         val nodeName = call.argument<String>("macAddress")
+        val resetConnection = call.argument<Boolean>("resetConnection") ?: false
 
         val delay = call.argument<Long>("delay") ?: 1000
         val timeOut = call.argument<Long>("timeOut") ?: 60000
+        if (resetConnection) {
+          brotherPrinter = null;
+          brotherPrinterDiscovery?.stop()
+          brotherPrinterDiscovery = null
+          brotherPrinterDiscoveryInProgress = false
+          brotherPrinterPrintingInProgress = false
+        }
         if (brotherPrinter == null) {
           brotherPrinterDiscoveryInProgress = true
           var foundPrinter = "No printers found"
@@ -54,13 +62,13 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
             Log.d("Discover Agent", foundPrinter)
             if (nodeName.isNullOrBlank() || nodeName == netPrinter.macAddress) {
               brotherPrinter = netPrinter
-              brotherPrinterDiscovery.stop()
+              brotherPrinterDiscovery!!.stop()
               brotherPrinterDiscoveryInProgress = false
               Log.d("Discover Agent", "Stopped by Result")
             }
           }
 
-          brotherPrinterDiscovery.start()
+          brotherPrinterDiscovery!!.start()
           Log.d("Discover Agent", "Started")
 
           val maxLoopNr = timeOut / delay
@@ -69,7 +77,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
             Log.d("Discover Agent", "($currentLoopNr) Working...")
             if (currentLoopNr > maxLoopNr) {
               Log.d("Discover Agent", "Timeout reached: $timeOut")
-              brotherPrinterDiscovery.stop()
+              brotherPrinterDiscovery!!.stop()
               brotherPrinterDiscoveryInProgress = false
               Log.d("Discover Agent", "Stopped by Timeout")
             }
