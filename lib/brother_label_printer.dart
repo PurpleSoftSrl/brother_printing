@@ -12,6 +12,12 @@ class BrotherLabelPrinter {
     return result;
   }
 
+  static Future<String> transferTemplate(String filePath) async {
+    final String result = await _channel.invokeMethod('transferTemplate',
+        {'filePath': filePath});
+    return result;
+  }
+
   static Future<String> printTemplate(
       int templateId, Map<String, String> replacers, int numberOfCopies) async {
     final String result = await _channel.invokeMethod('printTemplate', {
