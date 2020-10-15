@@ -1,8 +1,8 @@
 name: brother_label_printer
 description: A new flutter plugin project.
-version: 0.0.1
-author:
-homepage:
+version: 0.0.5
+author: "developers@purplesoft.io"
+homepage: "https://purplesoft.io"
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
