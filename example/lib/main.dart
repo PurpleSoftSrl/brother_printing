@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
           'item_mpc': '6548-655-987',
           'new_price': '60,00'
         },
-        3);
+        2);
   }
 
   @override

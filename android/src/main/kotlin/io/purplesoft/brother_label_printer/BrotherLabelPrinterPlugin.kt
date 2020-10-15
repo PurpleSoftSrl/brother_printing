@@ -43,7 +43,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                 val nodeName = call.argument<String>("macAddress")
                 val resetConnection = call.argument<Boolean>("resetConnection") ?: false
 
-                val delay = call.argument<Long>("delay") ?: 1000
+                val delay = call.argument<Long>("delay") ?: 500
                 val timeOut = call.argument<Long>("timeOut") ?: 60000
                 if (resetConnection) {
                     brotherPrinter = null;
@@ -109,10 +109,11 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     settings.ipAddress = brotherPrinter!!.ipAddress
                     settings.printMode = PrinterInfo.PrintMode.FIT_TO_PAGE
                     settings.numberOfCopies = noc
-                    settings.isLabelEndCut = true
                     settings.port = PrinterInfo.Port.NET
                     brotherPrinterBase!!.printerInfo = settings
                 }
+                brotherPrinterBase!!.printerInfo.numberOfCopies = noc
+
                 runBlocking {
                     launch(Dispatchers.Default) {
                         if (brotherPrinterBase!!.startCommunication()) {
