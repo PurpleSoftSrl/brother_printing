@@ -109,7 +109,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     settings.ipAddress = brotherPrinter!!.ipAddress
                     settings.printMode = PrinterInfo.PrintMode.FIT_TO_PAGE
                     settings.numberOfCopies = noc
-                    //settings.macAddress = brotherPrinter.macAddress
+                    settings.isLabelEndCut = true
                     settings.port = PrinterInfo.Port.NET
                     brotherPrinterBase!!.printerInfo = settings
                 }
@@ -150,6 +150,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     settings.ipAddress = brotherPrinter!!.ipAddress
                     settings.printMode = PrinterInfo.PrintMode.FIT_TO_PAGE
                     settings.port = PrinterInfo.Port.NET
+                    settings.isLabelEndCut = true
                     brotherPrinterBase!!.printerInfo = settings
                 }
                 runBlocking {
