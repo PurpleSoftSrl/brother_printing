@@ -13,6 +13,7 @@ class BrotherLabelPrinter {
       'macAddress': macAddress,
       'resetConnection': resetConnection,
     });
+    print(result);
     return result;
   }
 

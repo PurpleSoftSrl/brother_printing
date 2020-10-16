@@ -1,5 +1,6 @@
 package io.purplesoft.brother_label_printer
 
+import android.app.Activity
 import androidx.annotation.NonNull
 import com.brother.ptouch.sdk.NetPrinter
 import com.brother.ptouch.sdk.NetworkDiscovery
@@ -7,6 +8,8 @@ import com.brother.ptouch.sdk.Printer
 import com.brother.ptouch.sdk.PrinterInfo
 import io.flutter.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -16,11 +19,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /** BrotherPrintingPlugin */
-class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
-    private var resultHandler: MethodChannel.Result? = null
+class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+    private val TAG = "BrotherLabelPrinterPlugin"
+    private lateinit var activity: Activity
+    var brotherPrinterDiscovery: NetworkDiscovery? = null
+    var brotherPrinter: NetPrinter? = null
+    var brotherPrinterBase: Printer? = null
+    var brotherPrinterDiscoveryInProgress = false
+    var brotherPrinterPrintingInProgress = false
 
     /// The MethodChannel that will the communication between Flutter and native Android
-    ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
     private lateinit var channel: MethodChannel
@@ -30,20 +38,15 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
         channel.setMethodCallHandler(this)
     }
 
-    var brotherPrinterDiscovery: NetworkDiscovery? = null
-    var brotherPrinter: NetPrinter? = null
-    var brotherPrinterBase: Printer? = null
-    var brotherPrinterDiscoveryInProgress = false
-    var brotherPrinterPrintingInProgress = false
+
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         Log.d("BrotherPrinting", "Method Called: ${call.method}")
-        resultHandler = result
         val args = call.arguments as Map<Any, Any?>
 
         if (call.method == "search") {
-            searchPrinter(args, false)
+            searchPrinter(args, false, result)
         } else if (call.method == "printTemplate") {
-            printTemplate(args)
+            printTemplate(args, result)
         } else if (call.method == "transferTemplate") {
             if (brotherPrinter == null) {
                 result.error("BRPRNOTSET", "Printer not set", "Search the printer first")
@@ -81,17 +84,16 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
-    private fun searchPrinter(arguments: Map<Any, Any?>, privateSearch: Boolean) {
+    private fun searchPrinter(arguments: Map<Any, Any?>, privateSearch: Boolean, result: Result) {
         if (brotherPrinterDiscoveryInProgress) {
             if (!privateSearch)
-                resultHandler?.error("DSCAGNT001", "Discover Agent already running...", "Try later")
+                result?.error("DSCAGNT001", "Discover Agent already running...", "Try later")
             //return false
         } else {
+            brotherPrinterDiscoveryInProgress = true
             val nodeName: String = (arguments["macAddress"] ?: "") as String
             val resetConnection: Boolean = (arguments["resetConnection"] ?: false) as Boolean
 
-            val delay: Long = ((arguments["delay"] ?: 200) as Int).toLong()
-            val timeOut: Long = ((arguments["timeOut"] ?: 60000) as Int).toLong()
             if (resetConnection) {
                 brotherPrinter = null;
                 brotherPrinterBase = null
@@ -100,51 +102,45 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                 brotherPrinterPrintingInProgress = false
             }
             if (brotherPrinter == null) {
-                brotherPrinterDiscoveryInProgress = true
-                var foundPrinter = "No printers found"
-                Log.d("BrotherPrinting", "Arguments: [MacAddress: $nodeName - Delay: $delay]")
+                Log.d(TAG, "Discovery Init")
                 brotherPrinterDiscovery = NetworkDiscovery { netPrinter ->
-                    foundPrinter = "Printer Found:\r\nModelName: ${netPrinter.modelName}\r\nNodeName: ${netPrinter.nodeName}\r\nLocation: ${netPrinter.location}\r\nIPAddress: ${netPrinter.ipAddress}\r\nMacAddress: ${netPrinter.macAddress}\r\nSerialNumber: ${netPrinter.serNo}"
-                    Log.d("Discover Agent", foundPrinter)
-                    if (nodeName.isBlank() || nodeName.toLowerCase() == netPrinter.macAddress.toLowerCase()) {
+                    val foundPrinter = "Printer Found:\r\nModelName: ${netPrinter.modelName}\r\nNodeName: ${netPrinter.nodeName}\r\nLocation: ${netPrinter.location}\r\nIPAddress: ${netPrinter.ipAddress}\r\nMacAddress: ${netPrinter.macAddress}\r\nSerialNumber: ${netPrinter.serNo}"
+                    Log.d(TAG, foundPrinter)
+                    if (nodeName.isNullOrEmpty() || nodeName.equals(netPrinter.macAddress, true)) {
+                        Log.d(TAG, "Setting current printer")
                         brotherPrinter = netPrinter
+                        Log.d(TAG, "Stop discovery")
                         brotherPrinterDiscoveryInProgress = false
-
+                        brotherPrinterDiscovery?.stop()
+                        Log.d(TAG, "Stopped discovery")
+                        activity?.runOnUiThread {
+                            if (!privateSearch) {
+                                if (brotherPrinter != null) {
+                                    result?.success("${brotherPrinter!!.ipAddress} - ${brotherPrinter!!.macAddress}")
+                                } else {
+                                    result?.error("NOPRTFOUND", "Discover Agent unable to find printers", "Houston we have a problem")
+                                }
+                            }
+                        }
                     }
                 }
-
                 brotherPrinterDiscovery?.start()
-                Log.d("Discover Agent", "Started")
-
-                val maxLoopNr = timeOut / delay
-                var currentLoopNr = 0
-                while (brotherPrinterDiscoveryInProgress) {
-                    Log.d("Discover Agent", "($currentLoopNr) Working...")
-                    if (currentLoopNr > maxLoopNr) {
-                        Log.d("Discover Agent", "Timeout reached: $timeOut")
-                        brotherPrinterDiscoveryInProgress = false
-                        Log.d("Discover Agent", "Stopped by Timeout")
-                    }
-                    currentLoopNr += 1
-                    Thread.sleep(delay)
-                }
-
-                brotherPrinterDiscovery?.stop()
-                Log.d("Discover Agent", "Stopped")
             }
-            if (!privateSearch)
-                resultHandler?.success("${brotherPrinter!!.ipAddress} - ${brotherPrinter!!.macAddress}")
         }
     }
 
-    private fun printTemplate(arguments: Map<Any, Any?>) {
+    private fun printTemplate(arguments: Map<Any, Any?>, result: Result) {
         val macAddress = arguments["macAddress"] as String?
 
-        if (macAddress != null && brotherPrinter == null) {
-            searchPrinter(arguments, true)
-        }
         if (brotherPrinter == null) {
-            resultHandler?.error("BRPRNOTSET", "Printer not set", "Search the printer first")
+            searchPrinter(arguments, true, result)
+            while (brotherPrinterDiscoveryInProgress) {
+                Thread.sleep(200)
+            }
+        }
+
+        if (brotherPrinter == null) {
+            result?.error("BRPRNOTSET", "Printer not set", "Search the printer first")
         } else {
             val templateId = (arguments["templateId"] ?: 1) as Int
             val noc = (arguments["numberOfCopies"] ?: 1) as Int
@@ -199,15 +195,32 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     }
                 }
             }
-            if (resultOk.isBlank()){
-                resultHandler?.error(resultKOErrorCode, resultKOMessage, templateId)
-            }else{
-                resultHandler?.success(resultOk)
+            if (resultOk.isBlank()) {
+                result?.error(resultKOErrorCode, resultKOMessage, templateId)
+            } else {
+                result?.success(resultOk)
             }
         }
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        Log.d(TAG, "onAttachedToActivity")
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        Log.d(TAG, "onDetachedFromActivityForConfigChanges")
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        Log.d(TAG, "onReattachedToActivityForConfigChanges")
+    }
+
+    override fun onDetachedFromActivity() {
+        Log.d(TAG, "onDetachedFromActivity")
     }
 }

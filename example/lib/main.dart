@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> testPrint() async {
-    await BrotherLabelPrinter.printTemplate(
+   var res =  await BrotherLabelPrinter.printTemplate(
         2,
         {
           'SKU': '1098765432',
@@ -56,6 +56,8 @@ class _MyAppState extends State<MyApp> {
           'new_price': '60,00'
         },
         numberOfCopies: 2);
+
+   print(res);
   }
 
   @override
