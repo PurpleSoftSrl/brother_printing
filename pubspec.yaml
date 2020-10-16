@@ -1,6 +1,6 @@
 name: brother_label_printer
-description: A new flutter plugin project.
-version: 0.0.10
+description: Brother printer flutter plugin
+version: 0.0.12
 author: "developers@purplesoft.io"
 homepage: "https://purplesoft.io"
 
