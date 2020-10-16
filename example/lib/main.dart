@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> testSearch() async {
     String platformVersion;
     try {
-      platformVersion = await BrotherLabelPrinter.search("", true);
+      platformVersion = await BrotherLabelPrinter.search('', resetConnection: true);
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
           'item_mpc': '6548-655-987',
           'new_price': '60,00'
         },
-        2);
+        numberOfCopies: 2);
   }
 
   @override
