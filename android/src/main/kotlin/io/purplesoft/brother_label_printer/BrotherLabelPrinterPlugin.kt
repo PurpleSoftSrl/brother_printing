@@ -8,8 +8,6 @@ import com.brother.ptouch.sdk.Printer
 import com.brother.ptouch.sdk.PrinterInfo
 import io.flutter.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.embedding.engine.plugins.activity.ActivityAware
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -19,8 +17,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /** BrotherPrintingPlugin */
-class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
-    private val TAG = "BrotherLabelPrinterPlugin"
+class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
+    private val TAG = "brother_label_printer"
     private lateinit var activity: Activity
     var brotherPrinterDiscovery: NetworkDiscovery? = null
     var brotherPrinter: NetPrinter? = null
@@ -40,7 +38,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
 
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        Log.d("BrotherPrinting", "Method Called: ${call.method}")
+        Log.d(TAG, "Method Called: ${call.method}")
         val args = call.arguments as Map<Any, Any?>
 
         if (call.method == "search") {
@@ -87,7 +85,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
     private fun searchPrinter(arguments: Map<Any, Any?>, privateSearch: Boolean, result: Result) {
         if (brotherPrinterDiscoveryInProgress) {
             if (!privateSearch)
-                result?.error("DSCAGNT001", "Discover Agent already running...", "Try later")
+                result.error("DSCAGNT001", "Discover Agent already running...", "Try later")
             //return false
         } else {
             brotherPrinterDiscoveryInProgress = true
@@ -101,7 +99,9 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                 brotherPrinterDiscoveryInProgress = false
                 brotherPrinterPrintingInProgress = false
             }
-            if (brotherPrinter == null) {
+            if (this.brotherPrinter == null) {
+                brotherPrinterDiscoveryInProgress = true
+
                 Log.d(TAG, "Discovery Init")
                 brotherPrinterDiscovery = NetworkDiscovery { netPrinter ->
                     val foundPrinter = "Printer Found:\r\nModelName: ${netPrinter.modelName}\r\nNodeName: ${netPrinter.nodeName}\r\nLocation: ${netPrinter.location}\r\nIPAddress: ${netPrinter.ipAddress}\r\nMacAddress: ${netPrinter.macAddress}\r\nSerialNumber: ${netPrinter.serNo}"
@@ -112,19 +112,25 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                         Log.d(TAG, "Stop discovery")
                         brotherPrinterDiscoveryInProgress = false
                         brotherPrinterDiscovery?.stop()
-                        Log.d(TAG, "Stopped discovery")
-                        activity?.runOnUiThread {
-                            if (!privateSearch) {
-                                if (brotherPrinter != null) {
-                                    result?.success("${brotherPrinter!!.ipAddress} - ${brotherPrinter!!.macAddress}")
-                                } else {
-                                    result?.error("NOPRTFOUND", "Discover Agent unable to find printers", "Houston we have a problem")
-                                }
-                            }
-                        }
                     }
                 }
                 brotherPrinterDiscovery?.start()
+
+                while (brotherPrinterDiscoveryInProgress) {
+                    Thread.sleep(500)
+                }
+
+
+                Log.d(TAG, "Stopped discovery")
+
+                if (!privateSearch) {
+                    if (brotherPrinter != null) {
+                        result.success("${brotherPrinter!!.ipAddress} - ${brotherPrinter!!.macAddress}")
+                    } else {
+                        result.error("NOPRTFOUND", "Discover Agent unable to find printers", "Houston we have a problem")
+                    }
+                }
+
             }
         }
     }
@@ -140,12 +146,12 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
         }
 
         if (brotherPrinter == null) {
-            result?.error("BRPRNOTSET", "Printer not set", "Search the printer first")
+            result.error("BRPRNOTSET", "Printer not set", "Search the printer first")
         } else {
             val templateId = (arguments["templateId"] ?: 1) as Int
             val noc = (arguments["numberOfCopies"] ?: 1) as Int
             val labelReplacers = arguments["replacers"] as Map<String, String>
-            Log.d("BrotherPrinting", "- TemplateId: $templateId - Replacers Counter: ${labelReplacers.count()}")
+            Log.d(TAG, "TemplateId: $templateId - Replacers Counter: ${labelReplacers.count()}")
 
             brotherPrinterPrintingInProgress = true
             if (brotherPrinterBase == null) {
@@ -196,9 +202,9 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
                 }
             }
             if (resultOk.isBlank()) {
-                result?.error(resultKOErrorCode, resultKOMessage, templateId)
+                result.error(resultKOErrorCode, resultKOMessage, templateId)
             } else {
-                result?.success(resultOk)
+                result.success(resultOk)
             }
         }
     }
@@ -207,20 +213,4 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
         channel.setMethodCallHandler(null)
     }
 
-    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        Log.d(TAG, "onAttachedToActivity")
-        activity = binding.activity
-    }
-
-    override fun onDetachedFromActivityForConfigChanges() {
-        Log.d(TAG, "onDetachedFromActivityForConfigChanges")
-    }
-
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        Log.d(TAG, "onReattachedToActivityForConfigChanges")
-    }
-
-    override fun onDetachedFromActivity() {
-        Log.d(TAG, "onDetachedFromActivity")
-    }
 }
