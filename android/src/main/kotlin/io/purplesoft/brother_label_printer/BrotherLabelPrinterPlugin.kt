@@ -108,13 +108,13 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     Log.d("Discover Agent", foundPrinter)
                     if (nodeName.isBlank() || nodeName.toLowerCase() == netPrinter.macAddress.toLowerCase()) {
                         brotherPrinter = netPrinter
-                        brotherPrinterDiscovery!!.stop()
                         brotherPrinterDiscoveryInProgress = false
+                        brotherPrinterDiscovery?.stop()
                         Log.d("Discover Agent", "Stopped by Result")
                     }
                 }
 
-                brotherPrinterDiscovery!!.start()
+                brotherPrinterDiscovery?.start()
                 Log.d("Discover Agent", "Started")
 
                 val maxLoopNr = timeOut / delay
