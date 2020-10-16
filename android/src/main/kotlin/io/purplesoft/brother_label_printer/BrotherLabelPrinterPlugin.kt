@@ -109,8 +109,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     if (nodeName.isBlank() || nodeName.toLowerCase() == netPrinter.macAddress.toLowerCase()) {
                         brotherPrinter = netPrinter
                         brotherPrinterDiscoveryInProgress = false
-                        brotherPrinterDiscovery?.stop()
-                        Log.d("Discover Agent", "Stopped by Result")
+
                     }
                 }
 
@@ -123,13 +122,15 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                     Log.d("Discover Agent", "($currentLoopNr) Working...")
                     if (currentLoopNr > maxLoopNr) {
                         Log.d("Discover Agent", "Timeout reached: $timeOut")
-                        brotherPrinterDiscovery!!.stop()
                         brotherPrinterDiscoveryInProgress = false
                         Log.d("Discover Agent", "Stopped by Timeout")
                     }
                     currentLoopNr += 1
                     Thread.sleep(delay)
                 }
+
+                brotherPrinterDiscovery?.stop()
+                Log.d("Discover Agent", "Stopped")
             }
             if (!privateSearch)
                 resultHandler?.success("${brotherPrinter!!.ipAddress} - ${brotherPrinter!!.macAddress}")
