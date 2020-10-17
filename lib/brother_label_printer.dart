@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class BrotherLabelPrinter {
-  static const MethodChannel _channel = const MethodChannel('brother_label_printer');
+  static const MethodChannel _channel = const MethodChannel(
+      'brother_label_printer');
 
-  static Future<String> search(
-    String macAddress, {
+  static Future<String> search(String macAddress, {
     bool resetConnection,
   }) async {
     final String result = await _channel.invokeMethod('search', {
@@ -17,16 +17,17 @@ class BrotherLabelPrinter {
     return result;
   }
 
-  static Future<String> printTemplate(
-    int templateId,
-    Map<String, String> replacers, {
-    String macAddress,
-    int numberOfCopies,
-  }) async {
+  static Future<String> printTemplate(int templateId,
+      Map<String, String> replacers, {
+        String macAddress,
+        String ip,
+        int numberOfCopies,
+      }) async {
     final String result = await _channel.invokeMethod('printTemplate', {
       'templateId': templateId,
       'replacers': replacers,
       'macAddress': macAddress,
+      'ip': ip,
       'numberOfCopies': numberOfCopies,
     });
     return result;

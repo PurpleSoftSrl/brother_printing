@@ -12,12 +12,14 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 /** BrotherPrintingPlugin */
 class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
+    private val uiScope = CoroutineScope(Dispatchers.Main)
+    private val uiDispatcher: CoroutineDispatcher = Dispatchers.Main
+    private val bgDispatcher: CoroutineDispatcher = Dispatchers.IO
+
     private val TAG = "brother_label_printer"
     private lateinit var activity: Activity
     var brotherPrinterDiscovery: NetworkDiscovery? = null
@@ -44,7 +46,19 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
         if (call.method == "search") {
             searchPrinter(args, result)
         } else if (call.method == "printTemplate") {
-            printTemplate(args, result)
+            uiScope.launch {
+                val task = async(bgDispatcher) {
+                    // background thread
+                    val dataResult = printTemplate(args, result)
+
+                    return@async dataResult
+                }
+                val resultTask = task.await()
+                Log.d(TAG, "delay $resultTask")
+                result.success(resultTask)
+            }
+
+
         } else if (call.method == "transferTemplate") {
             if (brotherPrinter == null) {
                 result.error("BRPRNOTSET", "Printer not set", "Search the printer first")
@@ -89,6 +103,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
         } else {
             brotherPrinterDiscoveryInProgress = true
             val nodeName: String = (arguments["macAddress"] ?: "") as String
+            val ip: String = (arguments["ip"] ?: "") as String
             val resetConnection: Boolean = (arguments["resetConnection"] ?: false) as Boolean
 
             if (resetConnection) {
@@ -103,11 +118,12 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
 
                 Log.d(TAG, "Discovery Init")
                 brotherPrinterDiscovery = NetworkDiscovery { netPrinter ->
+
                     val macAddress = netPrinter.macAddress.toLowerCase().replace(":", "").replace("-", "").trim()
                     val nodeNameClean = nodeName.toLowerCase().replace(":", "").replace("-", "").trim()
                     val foundPrinter = "Printer Found:\r\nModelName: ${netPrinter.modelName}\r\nNodeName: ${netPrinter.nodeName}\r\nLocation: ${netPrinter.location}\r\nIPAddress: ${netPrinter.ipAddress}\r\nMacAddress: $macAddress\r\nSerialNumber: ${netPrinter.serNo}"
                     Log.d(TAG, foundPrinter)
-
+                    Log.d(TAG, netPrinter.macAddress)
                     if (nodeNameClean.equals(macAddress, true)) {
                         Log.d(TAG, "Setting current printer")
                         brotherPrinter = netPrinter
@@ -141,75 +157,95 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
-    private fun printTemplate(arguments: Map<Any, Any?>, result: Result) {
-        val macAddress = arguments["macAddress"] as String?
+    private fun printTemplate(arguments: Map<Any, Any?>, result: Result): String {
+        Log.d(TAG, "PRINT TEMPLATE - START")
 
-        if (brotherPrinter == null) {
-            result.error("BRPRNOTSET", "Printer not set", "Search the printer first")
-        } else {
-            val templateId = (arguments["templateId"] ?: 1) as Int
-            val noc = (arguments["numberOfCopies"] ?: 1) as Int
-            val labelReplacers = arguments["replacers"] as Map<String, String>
-            Log.d(TAG, "TemplateId: $templateId - Replacers Counter: ${labelReplacers.count()}")
+        val nodeName: String = (arguments["macAddress"] ?: "") as String
+        val ip: String = (arguments["ip"] ?: "") as String
+        val templateId = (arguments["templateId"] ?: 1) as Int
+        val noc = (arguments["numberOfCopies"] ?: 1) as Int
+        val labelReplacers = arguments["replacers"] as Map<String, String>
 
-            brotherPrinterPrintingInProgress = true
-            if (brotherPrinterBase == null) {
-                // Specify Printer
-                brotherPrinterBase = Printer()
-                val settings = brotherPrinterBase!!.printerInfo
-                settings.printerModel = PrinterInfo.Model.QL_820NWB
-                settings.ipAddress = brotherPrinter!!.ipAddress
-                settings.printMode = PrinterInfo.PrintMode.FIT_TO_PAGE
-                settings.numberOfCopies = noc
-                settings.port = PrinterInfo.Port.NET
-                brotherPrinterBase!!.printerInfo = settings
-            }
-            brotherPrinterBase!!.printerInfo.numberOfCopies = noc
-            var resultOk = ""
-            var resultKOErrorCode = ""
-            var resultKOMessage = ""
+        Log.d(TAG, "MAC:${nodeName} - IP:${ip} - TEMPLATE:${templateId} - NOC:${noc}")
 
-            runBlocking {
-                launch(Dispatchers.Default) {
-                    if (brotherPrinterBase!!.startCommunication()) {
-                        // Specify the template key and the printer encode
-                        if (brotherPrinterBase!!.startPTTPrint(templateId, null)) {
-                            if (!labelReplacers.isNullOrEmpty()) {
-                                for (replacer in labelReplacers) {
-                                    brotherPrinterBase!!.replaceTextName(replacer.value, replacer.key)
-                                }
-                            }
-                            // Start print
-                            val templatePrintResult = brotherPrinterBase!!.flushPTTPrint()
-                            if (templatePrintResult.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
-                                Log.d(TAG, "ERROR - " + templatePrintResult.errorCode)
 
-                                resultKOErrorCode = "templatePrintResult.errorCode.toString()"
-                                resultKOMessage = "ERROR - $resultKOErrorCode"
-                                //resultHandler?.error(templatePrintResult.errorCode.toString(), "ERROR - " + templatePrintResult.errorCode, templateId)
+        val printer: Printer = Printer()
+        val settings = PrinterInfo()
+        settings.printerModel = PrinterInfo.Model.QL_820NWB
+        settings.ipAddress = ip
+        settings.printMode = PrinterInfo.PrintMode.FIT_TO_PAGE
+        settings.localName = PrinterInfo.Model.QL_820NWB.name
+        settings.numberOfCopies = noc
+        settings.port = PrinterInfo.Port.NET
+        printer.printerInfo = settings
 
-                            } else {
-                                resultOk = "label printed"
-                            }
+        Log.d(TAG, "MAC:${printer.printerInfo.macAddress} - IP:${printer.printerInfo.ipAddress} - NAME:${printer.printerInfo.localName} - NOC:${noc}")
+
+        var resultOk = ""
+        var resultKOErrorCode = ""
+        var resultKOMessage = ""
+
+        Log.d(TAG, "START COMM")
+
+        try {
+            Log.d(TAG, "Thread started")
+
+            val startCommunication = printer.startCommunication()
+            if (startCommunication) {
+                Log.d(TAG, "STARTED COMM")
+
+                // Specify the template key and the printer encode
+                if (printer.startPTTPrint(templateId, null)) {
+                    Log.d(TAG, "START REPLACERS")
+
+                    if (!labelReplacers.isNullOrEmpty()) {
+                        for (replacer in labelReplacers) {
+                            printer.replaceTextName(replacer.value, replacer.key)
                         }
-                        brotherPrinterBase!!.endCommunication()
-                        brotherPrinterPrintingInProgress = false
+                    }
+                    // Start print
+                    Log.d(TAG, "START PRINT TPL")
 
-                        //resultHandler?.success("label printed")
+                    val templatePrintResult = printer.flushPTTPrint()
+                    if (templatePrintResult.errorCode != PrinterInfo.ErrorCode.ERROR_NONE) {
+                        Log.d(TAG, "ERROR - " + templatePrintResult.errorCode)
 
+                        resultKOErrorCode = "templatePrintResult.errorCode.toString()"
+                        resultKOMessage = "ERROR - $resultKOErrorCode"
+                        //resultHandler?.error(templatePrintResult.errorCode.toString(), "ERROR - " + templatePrintResult.errorCode, templateId)
+
+                    } else {
+                        resultOk = "label printed"
                     }
                 }
+                printer.endCommunication()
+                brotherPrinterPrintingInProgress = false
+                Log.d(TAG, "FINISH PRINT TPL")
+
+
+                //resultHandler?.success("label printed")
+
             }
-            if (resultOk.isBlank()) {
-                result.error(resultKOErrorCode, resultKOMessage, templateId)
+
+            return if (resultOk.isBlank()) {
+                "KO - $resultKOErrorCode"
             } else {
-                result.success(resultOk)
+                "OK - $resultOk"
             }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            Log.d(TAG, "Print finally finally")
+
         }
+        return "KO"
+
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
+
 
 }
