@@ -84,7 +84,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
 
     private fun searchPrinter(arguments: Map<Any, Any?>, result: Result) {
         if (brotherPrinterDiscoveryInProgress) {
-            result.error("DSCAGNT001", "Discover Agent already running...", "Try later")
+            result.success("DISCOVER_RUNNING")
             //return false
         } else {
             brotherPrinterDiscoveryInProgress = true
@@ -133,7 +133,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
                 if (brotherPrinter != null) {
                     result.success("${brotherPrinter!!.ipAddress} - ${brotherPrinter!!.macAddress}")
                 } else {
-                    result.error("NOPRTFOUND", "Discover Agent unable to find printers", "Houston we have a problem")
+                    result.success("NO_PRINTERS")
                 }
 
 
