@@ -167,9 +167,9 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
         val noc = (arguments["numberOfCopies"] ?: 1) as Int
         val labelReplacers = arguments["replacers"] as Map<String, String>
 
-        val model = PrinterInfo.Model.QL_820NWB
+        var model = PrinterInfo.Model.QL_820NWB
         if (modelName == "810") {
-            model = PrinterInfo.Model.QL_810NWB
+            model = PrinterInfo.Model.QL_810W
         }
 
         Log.d(TAG, "Model: ${modelName} - MAC:${nodeName} - IP:${ip} - TEMPLATE:${templateId} - NOC:${noc}")
