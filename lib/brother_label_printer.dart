@@ -19,12 +19,14 @@ class BrotherLabelPrinter {
 
   static Future<String> printTemplate(int templateId,
       Map<String, String> replacers, {
-        String macAddress,
+    String model,
+    String macAddress,
         String ip,
         int numberOfCopies,
       }) async {
     final String result = await _channel.invokeMethod('printTemplate', {
       'templateId': templateId,
+      'model': model,
       'replacers': replacers,
       'macAddress': macAddress,
       'ip': ip,

@@ -162,19 +162,25 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
 
         val nodeName: String = (arguments["macAddress"] ?: "") as String
         val ip: String = (arguments["ip"] ?: "") as String
+        val modelName: String = (arguments["model"] ?: "820") as String // default model 820
         val templateId = (arguments["templateId"] ?: 1) as Int
         val noc = (arguments["numberOfCopies"] ?: 1) as Int
         val labelReplacers = arguments["replacers"] as Map<String, String>
 
-        Log.d(TAG, "MAC:${nodeName} - IP:${ip} - TEMPLATE:${templateId} - NOC:${noc}")
+        val model = PrinterInfo.Model.QL_820NWB
+        if (modelName == "810") {
+            model = PrinterInfo.Model.QL_810NWB
+        }
+
+        Log.d(TAG, "Model: ${modelName} - MAC:${nodeName} - IP:${ip} - TEMPLATE:${templateId} - NOC:${noc}")
 
 
         val printer: Printer = Printer()
         val settings = PrinterInfo()
-        settings.printerModel = PrinterInfo.Model.QL_820NWB
+        settings.printerModel = model
         settings.ipAddress = ip
         settings.printMode = PrinterInfo.PrintMode.FIT_TO_PAGE
-        settings.localName = PrinterInfo.Model.QL_820NWB.name
+        settings.localName = model.name
         settings.numberOfCopies = noc
         settings.port = PrinterInfo.Port.NET
         printer.printerInfo = settings
