@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -34,15 +33,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> testUpload() async {
-    String platformVersion;
-    try {
-      var filesToUpload = await FilePicker.platform.pickFiles();
-      await BrotherLabelPrinter.transferTemplate(filesToUpload.paths.first);
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-  }
+  Future<void> testUpload() async {}
 
   Future<void> testPrint() async {
     var res = await BrotherLabelPrinter.printTemplate(
@@ -56,7 +47,8 @@ class _MyAppState extends State<MyApp> {
           'new_price': '60,00'
         },
         numberOfCopies: 2,
-        ip: '192.168.1.97', macAddress: '40:5B:D8:A0:72:A4');
+        ip: '192.168.1.151',
+        macAddress: '40:5B:D8:A0:72:A4');
 
     print(res);
   }
