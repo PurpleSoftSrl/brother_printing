@@ -21,7 +21,7 @@ class BrotherLabelPrinter {
     int templateId,
     Map<String, String> replacers, {
     required String model,
-    required String macAddress,
+    String? macAddress,
     required String ip,
     int numberOfCopies = 1,
   }) async {
