@@ -5,15 +5,12 @@ author: "developers@purplesoft.io"
 homepage: "https://purplesoft.io"
 
 environment:
-  sdk: ">=2.10.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
 flutter:
   plugin:
     platforms:
