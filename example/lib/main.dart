@@ -30,6 +30,7 @@ class _MyAppState extends State<MyApp> {
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
+    print(platformVersion);
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -48,7 +49,8 @@ class _MyAppState extends State<MyApp> {
         },
         numberOfCopies: 2,
         ip: '192.168.1.151',
-        macAddress: '40:5B:D8:A0:72:A4');
+        macAddress: '40:5B:D8:A0:72:A4',
+        model: '820');
 
     print(res);
   }
@@ -65,9 +67,9 @@ class _MyAppState extends State<MyApp> {
             Center(
               child: Text('Result: $_platformVersion\n'),
             ),
-            FlatButton(onPressed: testSearch, child: Text('Cerca')),
-            FlatButton(onPressed: testPrint, child: Text('Stampa')),
-            FlatButton(onPressed: testUpload, child: Text('Template'))
+            TextButton(onPressed: testSearch, child: Text('Cerca')),
+            TextButton(onPressed: testPrint, child: Text('Stampa')),
+            TextButton(onPressed: testUpload, child: Text('Template'))
           ],
         ),
       ),
