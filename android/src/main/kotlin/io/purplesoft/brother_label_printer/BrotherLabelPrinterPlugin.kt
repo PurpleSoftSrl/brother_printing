@@ -41,17 +41,16 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         Log.d(TAG, "Method Called: ${call.method}")
-        val args = call.arguments as Map<Any, Any?>
+        val args = call.arguments as Map<*, *>
 
         if (call.method == "search") {
-            searchPrinter(args, result)
+            //searchPrinter(args, result)
         } else if (call.method == "printTemplate") {
             uiScope.launch {
                 val task = async(bgDispatcher) {
                     // background thread
-                    val dataResult = printTemplate(args, result)
 
-                    return@async dataResult
+                    return@async printTemplate(args, result)
                 }
                 val resultTask = task.await()
                 Log.d(TAG, "delay $resultTask")
@@ -157,7 +156,7 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
-    private fun printTemplate(arguments: Map<Any, Any?>, result: Result): String {
+    private fun printTemplate(arguments: Map<*, *>, result: Result): String {
         Log.d(TAG, "PRINT TEMPLATE - START")
 
         val nodeName: String = (arguments["macAddress"] ?: "") as String
@@ -172,10 +171,10 @@ class BrotherLabelPrinterPlugin : FlutterPlugin, MethodCallHandler {
             model = PrinterInfo.Model.QL_810W
         }
 
-        Log.d(TAG, "Model: ${modelName} - MAC:${nodeName} - IP:${ip} - TEMPLATE:${templateId} - NOC:${noc}")
+        Log.d(TAG, "Model: $modelName - MAC:${nodeName} - IP:${ip} - TEMPLATE:${templateId} - NOC:${noc}")
 
 
-        val printer: Printer = Printer()
+        val printer = Printer()
         val settings = PrinterInfo()
         settings.printerModel = model
         settings.ipAddress = ip
