@@ -1,31 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="741481bc-9681-4b84-8c57-b752f152dae9" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/io/purplesoft/brother_label_printer/BrotherLabelPrinterPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/io/purplesoft/brother_label_printer/BrotherLabelPrinterPlugin.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/brother_label_printer.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/brother_label_printer.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
-    </list>
+    <list default="true" id="741481bc-9681-4b84-8c57-b752f152dae9" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1iBtlWLtPPt5wZZIfVbjV1Mo7PE" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
     <property name="dart.analysis.tool.window.force.activate" value="false" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
     <property name="io.flutter.reload.alreadyRun" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/android" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/example/android" />
     <property name="show.migrate.to.gradle.popup" value="false" />
   </component>
   <component name="SvnConfiguration">
@@ -42,25 +40,9 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="878" y="-1808" key="FileChooserDialogImpl" timestamp="1602751533844">
-      <screen x="0" y="-2160" width="2194" height="1194" />
+    <state x="1061" y="-1705" key="FileChooserDialogImpl" timestamp="1617099975848">
+      <screen x="0" y="-2160" width="2560" height="1400" />
     </state>
-    <state x="878" y="-1808" key="FileChooserDialogImpl/0.0.1536.824/0.-2160.2194.1194@0.-2160.2194.1194" timestamp="1602751533844" />
-    <state width="2151" height="333" key="GridCell.Tab.0.bottom" timestamp="1601393826752">
-      <screen x="0" y="-2160" width="2194" height="1194" />
-    </state>
-    <state width="2151" height="333" key="GridCell.Tab.0.bottom/0.0.1536.824/0.-2160.2194.1194@0.-2160.2194.1194" timestamp="1601393826752" />
-    <state width="2151" height="333" key="GridCell.Tab.0.center" timestamp="1601393826751">
-      <screen x="0" y="-2160" width="2194" height="1194" />
-    </state>
-    <state width="2151" height="333" key="GridCell.Tab.0.center/0.0.1536.824/0.-2160.2194.1194@0.-2160.2194.1194" timestamp="1601393826751" />
-    <state width="2151" height="333" key="GridCell.Tab.0.left" timestamp="1601393826751">
-      <screen x="0" y="-2160" width="2194" height="1194" />
-    </state>
-    <state width="2151" height="333" key="GridCell.Tab.0.left/0.0.1536.824/0.-2160.2194.1194@0.-2160.2194.1194" timestamp="1601393826751" />
-    <state width="2151" height="333" key="GridCell.Tab.0.right" timestamp="1601393826752">
-      <screen x="0" y="-2160" width="2194" height="1194" />
-    </state>
-    <state width="2151" height="333" key="GridCell.Tab.0.right/0.0.1536.824/0.-2160.2194.1194@0.-2160.2194.1194" timestamp="1601393826752" />
+    <state x="1061" y="-1705" key="FileChooserDialogImpl/0.0.1536.824/0.-2160.2560.1400@0.-2160.2560.1400" timestamp="1617099975848" />
   </component>
 </project>

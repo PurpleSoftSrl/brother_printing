@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -31,21 +30,14 @@ class _MyAppState extends State<MyApp> {
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
+    print(platformVersion);
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> testUpload() async {
-    String platformVersion;
-    try {
-      var filesToUpload = await FilePicker.platform.pickFiles();
-      await BrotherLabelPrinter.transferTemplate(filesToUpload.paths.first);
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-  }
+  Future<void> testUpload() async {}
 
   Future<void> testPrint() async {
-    await BrotherLabelPrinter.printTemplate(
+    var res = await BrotherLabelPrinter.printTemplate(
         2,
         {
           'SKU': '1098765432',
@@ -55,7 +47,12 @@ class _MyAppState extends State<MyApp> {
           'item_mpc': '6548-655-987',
           'new_price': '60,00'
         },
-        numberOfCopies: 2);
+        numberOfCopies: 2,
+        ip: '192.168.1.151',
+        macAddress: '40:5B:D8:A0:72:A4',
+        model: '820');
+
+    print(res);
   }
 
   @override
@@ -70,9 +67,9 @@ class _MyAppState extends State<MyApp> {
             Center(
               child: Text('Result: $_platformVersion\n'),
             ),
-            FlatButton(onPressed: testSearch, child: Text('Cerca')),
-            FlatButton(onPressed: testPrint, child: Text('Stampa')),
-            FlatButton(onPressed: testUpload, child: Text('Template'))
+            TextButton(onPressed: testSearch, child: Text('Cerca')),
+            TextButton(onPressed: testPrint, child: Text('Stampa')),
+            TextButton(onPressed: testUpload, child: Text('Template'))
           ],
         ),
       ),
