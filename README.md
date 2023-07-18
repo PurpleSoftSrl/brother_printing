@@ -1,6 +1,6 @@
 # brother_label_printer
 
-A new flutter plugin project.
+Brother printers flutter plugin
 
 ## Getting Started
 
